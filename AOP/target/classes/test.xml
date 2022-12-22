@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <bean name="student" class="org.example.beans.Student" autowire="byType">
+        <constructor-arg value="小明" type="java.lang.String"/>
+        <constructor-arg value="18" type="int"/>
+    </bean>
+    <bean name="test" class="org.example.aop.AopTest">
+    </bean>
+    <bean name="advice" class="org.example.aop.AopActive"/>
+    <aop:config>
+        <!--        *代表一个未知参数，如果个数和参数都是未知 则用..代替 -->
+<!--        <aop:aspect ref="test">-->
+<!--            <aop:pointcut id="stu" expression="execution(* org.example.beans.Student.say(String))"/>-->
+<!--            <aop:after-returning method="test" pointcut-ref="stu"/>-->
+<!--        </aop:aspect>-->
+
+<!--        <aop:aspect ref="test" >-->
+<!--            <aop:pointcut id="stu2" expression="@annotation(Deprecated)"/>-->
+<!--            <aop:before method="before" pointcut-ref="stu2" />-->
+<!--        </aop:aspect>-->
+<!--        <aop:aspect ref="test">-->
+<!--            <aop:pointcut id="stu3" expression="execution(* org.example.beans.Student.say(..))"/>-->
+<!--&lt;!&ndash;            环绕方法相当于完全代理了此方法，它完全将此方法包含在中间，需要我们手动调用才能够执行此方法，并且我们可以直接获取更多的参数&ndash;&gt;-->
+<!--            <aop:around method="around" pointcut-ref="stu3" />-->
+<!--        </aop:aspect>-->
+
+        <aop:pointcut id="stu4" expression="execution(* org.example.beans.Student.say(String))"/>
+        <aop:advisor advice-ref="advice" pointcut-ref="stu4" />
+    </aop:config>
+</beans>

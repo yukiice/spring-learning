@@ -27,7 +27,7 @@ public class Student {
         this.age = age;
         this.card = card;
     }
-     
+
     public void setName(String name){
         this.name = name;
     }
