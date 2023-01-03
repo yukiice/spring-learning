@@ -7,6 +7,12 @@
 </head>
 <body>
 <button onclick="submitData()">halo</button>
+<div>
+    <form action="upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit">
+    </form>
+</div>
 </body>
 <script>
     function submitData() {
