@@ -17,13 +17,13 @@ public class UserAuthService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        String password = mapper.getPasswordByUsername(s);
-        if (password == null){
+        com.example.entity.User user = mapper.getPasswordByUsername(s);
+        if (user == null){
             throw  new UsernameNotFoundException("用户名或者密码错误！");
         }else{
-            return User.withUsername(s)
-                    .password(password)
-                    .roles("user")
+            return User.withUsername(user.getUsername())
+                    .password(user.getPassword())
+                    .roles(user.getAuth())
                     .build();
         }
     }
