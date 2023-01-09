@@ -23,7 +23,7 @@ public class MainConfiguration {
         dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/book_manage");
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUsername("root");
-        dataSource.setPassword("123456");
+        dataSource.setPassword("123456789");
         return dataSource;
     }
 

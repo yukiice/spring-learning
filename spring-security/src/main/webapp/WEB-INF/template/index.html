@@ -5,6 +5,9 @@
     <title>Title</title>
 </head>
 <body>
-index
+<form action="logout" method="post">
+    <input type="text" th:name="${_csrf.getParameterName()}" th:value="${_csrf.token}" hidden>
+    <button>退出登陆</button>
+</form>
 </body>
 </html>
