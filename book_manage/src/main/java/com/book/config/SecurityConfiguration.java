@@ -1,21 +1,27 @@
-package com.example.config;
+package com.book.config;
 
-import com.example.service.UserAuthService;
+import com.book.entity.User;
+import com.book.mapper.UserMapper;
+import com.book.service.impl.UserAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
+import java.io.IOException;
 
 @EnableWebSecurity
 @Configuration
@@ -23,6 +29,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Resource
     UserAuthService service;
+
+    @Resource
+    UserMapper mapper;
 
     @Resource
     PersistentTokenRepository repository;
@@ -38,26 +47,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .authorizeRequests()   //首先需要配置哪些请求会被拦截，哪些请求必须具有什么角色才能访问
-                .antMatchers("/static/**")
-                .permitAll()    //静态资源，使用permitAll来运行任何人访问（注意一定要放在前面）
-                .antMatchers("/**")
-                .hasRole("user")   //所有请求必须登陆并且是user角色才可以访问（不包含上面的静态资源）
+                .authorizeRequests()
+                .antMatchers("/static/**", "/page/auth/**", "/api/auth/**").permitAll()
+                .antMatchers("/page/user/**", "/api/user/**").hasRole("user")
+                .antMatchers("/page/admin/**", "/api/admin/**").hasRole("admin")
+                .anyRequest().hasAnyRole("user", "admin")
                 .and()
                 .formLogin()
-                .loginPage("/login")
-                .loginProcessingUrl("/doLogin")
-                .defaultSuccessUrl("/index")
-                .permitAll()
+                .loginPage("/page/auth/login")
+                .loginProcessingUrl("/api/auth/login")
+                .successHandler(this::onAuthenticationSuccess)
                 .and()
                 .logout()
-                .logoutUrl("/logout")
+                .logoutUrl("/api/auth/logout")
                 .logoutSuccessUrl("/login")
                 .and()
+                .csrf().disable()
                 .rememberMe()
                 .rememberMeParameter("remember")
-                .tokenRepository(repository)
-                .tokenValiditySeconds(60 * 60 * 24 * 7);  //Token的有效时间（秒）默认为14天
+                .tokenValiditySeconds(60 * 60 * 24 * 7)
+                .tokenRepository(repository);
     }
 
     @Override
@@ -65,5 +74,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         auth
                 .userDetailsService(service)   //使用自定义的Service实现类进行验证
                 .passwordEncoder(new BCryptPasswordEncoder());   //依然使用BCryptPasswordEncoder
+    }
+
+    protected void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException,SecurityException{
+        HttpSession session = httpServletRequest.getSession();
+        User user =  mapper.getPasswordByUsername(authentication.getName());
+        session.setAttribute("user",user);
+        if (user.getAuth().equals("user")){
+            httpServletResponse.sendRedirect("/book/page/auth/index");
+        }else{
+            httpServletResponse.sendRedirect("/book/page/admin/index");
+        }
+
     }
 }
